@@ -13,7 +13,7 @@ def readFile(fileName):
     with open(fileName) as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         for row in spamreader:
-            xIn.append(float(row[0])*1000)
+            xIn.append(float(row[0]))
             yIn.append(float(row[1]))
 
     print('Reading OK!')
