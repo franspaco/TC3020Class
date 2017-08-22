@@ -12,10 +12,14 @@ def readFile(fileName):
     with open(fileName) as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         for row in spamreader:
-            xIn.append(float(row[0]))
+            xIn.append([])
+            xIn[-1].append(float(1))
+            xIn[-1].append(float(row[0]))
             yIn.append(float(row[1]))
 
     print('Reading OK!')
+    xIn = np.matrix(xIn)
+    yIn = np.matrix(yIn).T
     return xIn, yIn
 
 def calculaCosto(X, Y, theta):
@@ -23,13 +27,10 @@ def calculaCosto(X, Y, theta):
     cost = h - Y
     return cost
 
-def gradenteDescendente(x, y, theta, alpha, iteraciones):
-    m = len(x)
+def gradenteDescendente(X, Y, theta, alpha, iteraciones):
+    m = X.shape[0]
     print(m)
-    a = np.matrix( np.ones_like(x))
-    b = np.matrix(x)
-    X = np.concatenate((a,b)).T
-    Y = np.matrix(y).T
+    b = np.matrix(X[:,1].A1)
     for num in range(iteraciones):
         cost = calculaCosto(X, Y, theta)
         loss1 = b * cost 
@@ -40,10 +41,12 @@ def gradenteDescendente(x, y, theta, alpha, iteraciones):
         theta[0] = temp0
         theta[1] = temp1
     print(theta)
-    graficaDatos(x, y, theta)
-    return;
+    graficaDatos(X, Y, theta)
+    return theta;
 
-def graficaDatos(x, y, theta):
+def graficaDatos(X, Y, theta):
+    x = X[:,1].A1
+    y = Y.A1
     plt.plot(x, y, 'ro')
     rr = np.arange(min(x), max(x), 0.1)
     plt.plot(rr, h(theta, rr))
@@ -61,5 +64,5 @@ def h(theta, X):
 
 if __name__ == '__main__':
     fileName = 'ex1data1.txt'
-    x, y = readFile(fileName)
-    gradenteDescendente(x, y, [0, 0], 0.01, 10000)
+    X, Y = readFile(fileName)
+    gradenteDescendente(X, Y, [0, 0], 0.01, 10000)
