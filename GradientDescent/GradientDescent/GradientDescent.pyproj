@@ -27,6 +27,7 @@
   <ItemGroup>
     <Content Include="ex1data1.txt" />
     <Content Include="ex1data2.txt" />
+    <Content Include="ex1data3.txt" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />

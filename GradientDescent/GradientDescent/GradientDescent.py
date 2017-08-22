@@ -1,7 +1,6 @@
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-plt.xkcd()
 
     #answer: [[-3.89578088],
     #         [ 1.19303364]]
@@ -48,6 +47,9 @@ def graficaDatos(x, y, theta):
     plt.plot(x, y, 'ro')
     rr = np.arange(min(x), max(x), 0.1)
     plt.plot(rr, h(theta, rr))
+    plt.title('Fitting with y=' + str(theta[0]) + ' + ' + str(theta[1]) + 'x')
+    plt.ylabel('Y')
+    plt.xlabel('X')
     plt.show()
     return;
 
