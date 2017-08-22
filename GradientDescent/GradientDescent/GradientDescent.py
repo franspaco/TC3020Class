@@ -33,15 +33,16 @@ def gradenteDescendente(X, Y, theta, alpha, iteraciones):
     b = np.matrix(X[:,1].A1)
     for num in range(iteraciones):
         cost = calculaCosto(X, Y, theta)
-        loss1 = b * cost 
+        loss1 = X[:,1].T * cost
         avgError0 = cost.sum() / m
         avgError1 = loss1.sum() / m
         temp0 = theta[0] - alpha * avgError0
         temp1 = theta[1] - alpha * avgError1
         theta[0] = temp0
         theta[1] = temp1
+        #print(avgError0)
     print(theta)
-    graficaDatos(X, Y, theta)
+    #graficaDatos(X, Y, theta)
     return theta;
 
 def graficaDatos(X, Y, theta):
@@ -65,4 +66,5 @@ def h(theta, X):
 if __name__ == '__main__':
     fileName = 'ex1data1.txt'
     X, Y = readFile(fileName)
-    gradenteDescendente(X, Y, [0, 0], 0.01, 10000)
+    theta = gradenteDescendente(X, Y, [0, 0], 0.01, 1500)
+    graficaDatos(X, Y, theta)
