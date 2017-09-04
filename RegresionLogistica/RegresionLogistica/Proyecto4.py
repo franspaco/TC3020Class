@@ -33,10 +33,7 @@ def funcionCosto(theta, X, Y):
     J = 0
 
     hip = h(X, theta)
-    for i in range(0,m):
-        y = Y[i,0]
-        J += -y*np.log(hip[i,0])-((1-y)*np.log(1-hip[i,0]))
-
+    J = -Y.T * np.log(hip) - (1-Y).T * np.log(1-hip)
     J /= m
 
     grad = X.T * (h(X, theta) - Y)
@@ -50,7 +47,7 @@ def aprende(theta, X, Y, iteraciones):
         j, grad = funcionCosto(theta, X, Y)
         error.append(j.sum())
         theta -= 3 * grad.A1
-        print(str(num) + " " + str(j) + " " + str(theta))
+        #print(str(num) + " " + str(j) + " " + str(theta))
     return theta, error
 
 def predice(theta, X):
@@ -82,7 +79,7 @@ def f(x, theta):
 if __name__ == '__main__':
     fileName = 'ex2data1.txt'
     X, Y = readFile(fileName)
-    theta, error = aprende([0,0,0], X, Y, 1500)
+    theta, error = aprende([0,0,0], X, Y, 10000)
     print(theta)
     plt.plot(error)
     plt.ylabel('Costo')
