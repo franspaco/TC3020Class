@@ -52,7 +52,7 @@ def aprende(theta, X, Y, iteraciones):
 
 def predice(theta, X):
     X = np.matrix(X) / 100
-    X = np.matrix(np.concatenate(([1], X.A1)))
+    X = np.concatenate((np.matrix(np.ones(X.shape[0])).T, X), 1)
     p = h(X,theta)
     if p >= 0.5:
         return 1
@@ -79,7 +79,7 @@ def f(x, theta):
 if __name__ == '__main__':
     fileName = 'ex2data1.txt'
     X, Y = readFile(fileName)
-    theta, error = aprende([0,0,0], X, Y, 10000)
+    theta, error = aprende([0,0,0], X, Y, 100000)
     print(theta)
     plt.plot(error)
     plt.ylabel('Costo')
@@ -87,4 +87,4 @@ if __name__ == '__main__':
     plt.show()
     graficaDatos(X,Y, theta)
     #print(h([1, 0.45, 0.85], theta))
-    print(predice(theta, [45, 85]))
+    print(predice(theta, [[45, 85],[45, 85]]))
