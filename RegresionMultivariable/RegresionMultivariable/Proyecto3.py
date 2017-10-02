@@ -72,7 +72,9 @@ def ecuacionNormal(X,Y):
     return (((X.T) * X).I) * (X.T) * Y
 
 def predicePrecio(X,theta):
-    return X * theta
+    X = np.append([1], X)
+    theta = np.matrix(theta).T
+    return (X*theta).sum()
 
 def graficaError(J_Historial):
     plt.plot(J_Historial)
@@ -80,24 +82,7 @@ def graficaError(J_Historial):
     plt.xlabel('Iteraciones')
     plt.show()
 
-if __name__ == '__main__':
-    fileName = 'ex1data2.txt'
-    X, Y = readFile(fileName)
-    theta0 = [0, 0, 0]
-    #theta0 = np.matrix(theta0).T
-    alpha = 0.001
-    iterations = 1500
-    X, mu, sigma = normalizacionDeCaracteristicas(X)
-    print(mu)
-    print(sigma)
-
-    thetaFin = ecuacionNormal(X, Y)
-    costoFin = calculaCosto(X, Y, thetaFin.A1)
-    print("Best theta:")
-    print(thetaFin)
-    print("BestCost:")
-    print(costoFin)
-
+def mejorAlpha(X, Y, theta0, alpha, iterations):
     print("\nRound: 1, alpha: " + str(alpha))
     theta, cost = gadienteDescendenteMultivariable(X, Y, theta0, alpha, iterations)
     graficaError(cost)
@@ -107,7 +92,7 @@ if __name__ == '__main__':
     bestalpha = alpha
     minCost = cost[-1]
     bestTheta = theta
-    for num in range(1,50):
+    for num in range(1,10):
         alpha *= 3
         print("Round: " + str(num+1) + ", alpha: " + str(alpha))
         theta, cost = gadienteDescendenteMultivariable(X, Y, theta0, alpha, iterations)
@@ -118,17 +103,34 @@ if __name__ == '__main__':
         if cost[-1] < minCost:
             minCost = cost[-1]
             bestalpha = alpha
-            bestTheta = list(theta)
         print(cost[-1])
         print(theta)
-
     print("Best Alpha:")
     print(bestalpha)
     print("Minimum Cost:")
     print(minCost)
-    print("Best Theta:")
-    print(bestTheta)
 
+if __name__ == '__main__':
+    fileName = 'ex1data2.txt'
+    X, Y = readFile(fileName)
+    theta0 = [0, 0, 0]
+
+    alpha = 0.729
+    iterations = 1500
+    X, mu, sigma = normalizacionDeCaracteristicas(X)
+
+    thetaFin = ecuacionNormal(X, Y)
+    costoFin = calculaCosto(X, Y, thetaFin.A1)
+    print("Ecuación normal:")
+    print("Best theta:")
+    print(thetaFin)
+    print("BestCost:")
+    print(costoFin)
+
+    theta, cost = gadienteDescendenteMultivariable(X, Y, theta0, alpha, 1500)
+    print("\nGradiente descendente:")
+    print(theta)
+    graficaError(cost)
     #graficaDatos(X, Y, theta)
 
 # Sin normalizar

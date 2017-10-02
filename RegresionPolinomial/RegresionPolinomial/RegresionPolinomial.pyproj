@@ -1,17 +1,16 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>ddc1caaf-ce40-4d7b-8bdd-742f037e6702</ProjectGuid>
+    <ProjectGuid>3f2e952b-fc7f-42c2-8660-73fad9d0b975</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Proyecto3.py</StartupFile>
+    <StartupFile>RegresionPolinomial.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>RegresionMultivariable</Name>
-    <RootNamespace>RegresionMultivariable</RootNamespace>
-    <InterpreterId>Global|ContinuumAnalytics|Anaconda36-64</InterpreterId>
+    <Name>RegresionPolinomial</Name>
+    <RootNamespace>RegresionPolinomial</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,13 +21,11 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Proyecto3.py" />
+    <Compile Include="RegresionPolinomial.py" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ex1data2.txt" />
+    <Content Include="data.txt" />
+    <Content Include="ex1data1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
