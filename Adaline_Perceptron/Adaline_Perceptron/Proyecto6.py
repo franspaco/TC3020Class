@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
 
 def readFile(fileName):
     xIn = []
@@ -25,28 +26,42 @@ def escalon(x):
         return 1
 
 def funcionCostoPerceptron(theta,X,y):
-    pass
+    net = X * theta
+    for num in range(0, 4):
+        net[num,0] = escalon(net[num,0])
+    cost = y - net
+    return cost
 
 def entrenaPerceptron(X, y, theta):
     running = True
+    errors = []
     while running:
         running = False
+        cost = funcionCostoPerceptron(theta,X,y)
+        sumErr = 0
         for num in range(0, 4):
-            x = X[num]
-            net = x * theta
-            ev = escalon(net)
-            error = y[num,0] - ev
-            theta += error * x.T
-            if error != 0:
-                running = True
+            error = cost[num,0]
+            theta += error * X[num].T
+            sumErr += error
+            #if error != 0:
+                #running = True
+        errors.append(sumErr/4)
+        if sumErr != 0:
+           running = True
 
-    return theta
+    return theta, errors
 
 def predicePerceptron(theta, X):
     X = np.matrix(X)
     X = np.matrix(np.concatenate(([1], X.A1)))
     net = X * theta
     return escalon(net)
+
+def escalonAda(x):
+    if x < 0.5:
+        return 0
+    else:
+        return 1
 
 def funcionCostoAdaline(theta,X,y):
     s = X * theta
@@ -56,64 +71,48 @@ def funcionCostoAdaline(theta,X,y):
 
 def entrenaAdaline(X, y, theta):
     running = True
+    errors = []
     while running:
         running = False
+        #costo, grad = funcionCostoAdaline(theta,X,y)
         lms = 0
         for num in range(0, 4):
             x = X[num]
             net = x * theta
-            ev = escalon(net)
-            error = y[num,0] - ev
-            lms += error * error
-            theta += 0.01*error * x.T
-        lms /= (2*4)
-        print(lms, end="\r")
-        if lms > 0.01:
+            error = (y[num] - net).sum()
+            sqrd = error * error
+            lms += sqrd
+            theta += 0.1 * error * x.T
+        lms /= 8
+        if len(errors) == 0 or deltaIsBig(lms, errors[-1]):
             running = True
+        errors.append(lms)
+    return theta, errors
 
-    return theta
-
-def entrenaAdaline2(X, y, theta):
-    running = True
-    lmss = []
-    while running:
-        running = False
-        print("theta:")
-        print(theta)
-        costo, error = funcionCostoAdaline(theta, X, y)
-
-        for num in range(0, 4):
-            x = X[num]
-            e = error[num,0]
-            theta += 0.1 * e * x.T
-        lms = costo.sum() / ( 2 * 4 )
-        print(lms, end="\r")
-        if(len(lmss) != 0):
-            print(str(lms) + " - " + str(lmss[-1]) + " = " + str((lms - lmss[-1])))
-        if len(lmss) == 0 or abs(lms - lmss[-1]) > 0.001:
-            running = True
-        lmss.append(lms)
-
-    return theta
+def deltaIsBig(current, last):
+    return abs(current-last) > 0.0000001
 
 def prediceAdaline(theta, X):
     X = np.matrix(X)
     X = np.matrix(np.concatenate(([1], X.A1)))
     net = X * theta
-    return escalon(net)
+    return escalonAda(net)
 
 if __name__ == '__main__':
     X, Y = readFile('and.txt')
     theta0 = np.matrix([1.5, 0.5, 1.5]).T
-    theta1 = entrenaPerceptron(X, Y, theta0)
+    theta1, errors = entrenaPerceptron(X, Y, theta0)
     print(theta1)
     print(predicePerceptron(theta1, [0, 0]))
     print(predicePerceptron(theta1, [0, 1]))
     print(predicePerceptron(theta1, [1, 0]))
     print(predicePerceptron(theta1, [1, 1]))
 
-    theta0 = np.matrix([1.5, 0.5, 1.5]).T
-    theta2 = entrenaAdaline(X, Y, theta0)
+    theta0 = np.matrix([0.5, 0.5, 1.5]).T
+    theta2, errors = entrenaAdaline(X, Y, theta0)
+    #theta2 = np.matrix([[ 0.27777778],[ 0.44444444],[ 0.47222222]])
+    plt.plot(errors)
+    plt.show()
     print(theta2)
     print(prediceAdaline(theta2, [0, 0]))
     print(prediceAdaline(theta2, [0, 1]))
