@@ -35,6 +35,9 @@ def entrenaPerceptron(X, y, theta):
     running = True
     errors = []
     while running:
+        if len(errors) > 5000:
+            print('ERROR')
+            break;
         running = False
         sumErr = 0
         for num in range(0, 4):
@@ -70,6 +73,9 @@ def entrenaAdaline(X, y, theta):
     running = True
     errors = []
     while running:
+        if len(errors) > 5000: 
+            print('ERROR')
+            break;
         running = False
         lms = 0
         for num in range(0, 4):
@@ -92,22 +98,43 @@ def prediceAdaline(theta, X):
     return escalonAda(net)
 
 if __name__ == '__main__':
-    X, Y = readFile('and.txt')
+    X = np.matrix([[1,0,0],[1,0,1],[1,1,0],[1,1,1]])
+    Ys = {'1':np.matrix([0,0,0,1]).T, '2':np.matrix([0,1,1,1]).T, '3':np.matrix([0,1,1,0]).T}
+    opt = {'1':'and', '2':'or', '3':'xor'}
+    print('Select:\n  1 - AND\n  2 - OR\n  3 - XOR')
+
+    sel = input()
+    Y = Ys[sel]
+    target = opt[sel]
+
+    print('APRENDIENDO: ' + target.upper())
+    print('\nPerceptrón\nW=')
     theta0 = np.matrix([1.5, 1.5, 1.5]).T
     theta1, errors = entrenaPerceptron(X, Y, theta0)
     print(theta1)
+    print('\n a b | a ' + target + ' b')
+    print(' 0 0 | ', end='')
     print(predicePerceptron(theta1, [0, 0]))
+    print(' 0 1 | ', end='')
     print(predicePerceptron(theta1, [0, 1]))
+    print(' 1 0 | ', end='')
     print(predicePerceptron(theta1, [1, 0]))
+    print(' 1 1 | ', end='')
     print(predicePerceptron(theta1, [1, 1]))
     plot1, = plt.plot(errors, 'r', label='Perceptron')
 
+    print('\nAdaline:\nW=')
     theta0 = np.matrix([0.5, 0.5, 1.5]).T
     theta2, errors = entrenaAdaline(X, Y, theta0)
     print(theta2)
+    print('\n a b | a ' + target + ' b')
+    print(' 0 0 | ', end='')
     print(prediceAdaline(theta2, [0, 0]))
+    print(' 0 1 | ', end='')
     print(prediceAdaline(theta2, [0, 1]))
+    print(' 1 0 | ', end='')
     print(prediceAdaline(theta2, [1, 0]))
+    print(' 1 1 | ', end='')
     print(prediceAdaline(theta2, [1, 1]))
     plot2, = plt.plot(errors, 'b', label='Adaline')
     plt.ylabel('Error')
