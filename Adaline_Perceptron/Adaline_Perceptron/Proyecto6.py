@@ -100,7 +100,7 @@ if __name__ == '__main__':
     print(predicePerceptron(theta1, [0, 1]))
     print(predicePerceptron(theta1, [1, 0]))
     print(predicePerceptron(theta1, [1, 1]))
-    plt.plot(errors, 'r')
+    plot1, = plt.plot(errors, 'r', label='Perceptron')
 
     theta0 = np.matrix([0.5, 0.5, 1.5]).T
     theta2, errors = entrenaAdaline(X, Y, theta0)
@@ -109,8 +109,9 @@ if __name__ == '__main__':
     print(prediceAdaline(theta2, [0, 1]))
     print(prediceAdaline(theta2, [1, 0]))
     print(prediceAdaline(theta2, [1, 1]))
-    plt.plot(errors, 'b')
+    plot2, = plt.plot(errors, 'b', label='Adaline')
     plt.ylabel('Error')
     plt.xlabel('Iteración')
+    plt.legend(handles=[plot1, plot2])
     plt.show()
     
