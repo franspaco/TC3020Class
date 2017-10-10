@@ -48,7 +48,10 @@ def bpnUnaNeuronaSigmoidal (nn_params, input_layer_size, X, y, alpha, activacion
     costs = []
     running = True
     count = 0
+    #plt.ion()
     while running:
+        #print(W.A1)
+        #graficaDatos(X.T, Y.T, W.A1)
         running = False
         cost = funcionCosto(W, X, y).sum()
         costs.append(cost)
@@ -59,9 +62,8 @@ def bpnUnaNeuronaSigmoidal (nn_params, input_layer_size, X, y, alpha, activacion
             A = Z
         dz = A - Y
         dw = (1/m) * X * (dz.T)
-        #db = (1/m) * np.sum(dz)
         W += -alpha * dw
-        if (len(costs) == 1) or deltaIsBig(cost, costs[-2]):
+        if (len(costs) < 100) or deltaIsBig(cost, costs[-2]):
             running = True
         if count > 10000:
             running = False
@@ -69,7 +71,7 @@ def bpnUnaNeuronaSigmoidal (nn_params, input_layer_size, X, y, alpha, activacion
     return W, costs
 
 def deltaIsBig(current, last):
-    return abs(current-last) > 0.000001
+    return abs(current-last) > 0.00001
 
 def sigmoidGradiente(Z, Y):
     A = vsig(Z)
@@ -97,16 +99,42 @@ def prediceSig(list, W):
     a = prediceRNYaEntrenada(l.T, W, "sigmoidal")
     return a.sum()
 
+def graficaDatos(X, Y, theta):
+    plt.clf()
+    m = X.shape[0]
+    for n in range(0,m):
+        if bool(Y[n,0]):
+            plt.plot(X[n,1], X[n,2], 'rx')
+        else:
+            plt.plot(X[n,1], X[n,2], 'bo')
+    mi = min(X[:,1]).sum()
+    ma = max(X[:,1]).sum()
+    rr = np.arange(mi, ma,(ma-mi)/1000)
+    plt.plot(rr, f(rr, theta), 'g')
+    #plt.pause(0.05)
+    plt.show()
+
+def f(x, theta):
+    return -theta[0]/theta[2]-(theta[1]/theta[2])*(x)
+
 if __name__ == '__main__':
     
     X, Y = readFile('exams.txt')
     nn_params = randInicializaPesos(3)
     print("Aprendiendo Exams")
-    W, costsEx = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 0.0003, "sigmoidal")
+    X[1,:] /= 100
+    X[2,:] /= 100
+    print(X.T)
+    W, costsEx = bpnUnaNeuronaSigmoidal(nn_params, 1, X, Y, 3, "sigmoidal")
     print("Pesos:")
     print(W)
+    graficaDatos(X.T, Y.T, W.A1)
+    #print(prediceSig([34.62365962451697,78.0246928153624], W))
 
-    print(prediceSig([34.62365962451697,78.0246928153624], W))
+    a = prediceRNYaEntrenada(X, W, "sigmoidal")
+    for num in range(X.shape[1]):
+        print(str(a[0,num]) + " - " + str(Y[0, num]))
+
 
     plt.plot(costsEx, 'g')
     plt.show()
