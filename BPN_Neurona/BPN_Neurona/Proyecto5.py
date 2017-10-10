@@ -71,8 +71,9 @@ def bpnUnaNeuronaSigmoidal (nn_params, input_layer_size, X, y, alpha, activacion
 def deltaIsBig(current, last):
     return abs(current-last) > 0.000001
 
-def sigmoidGradiente(z):
-    pass
+def sigmoidGradiente(Z, Y):
+    A = vsig(Z)
+    
 
 def linealGradiante(z):
     pass
@@ -97,23 +98,61 @@ def prediceSig(list, W):
     return a.sum()
 
 if __name__ == '__main__':
-    #and - 3
-    #or  - 3
-    X, Y = readFile('or.txt')
-    print(X)
-    print(Y)
+    
+    X, Y = readFile('exams.txt')
     nn_params = randInicializaPesos(3)
-    W, costs = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 3, "sigmoidal")
-
+    print("Aprendiendo Exams")
+    W, costsEx = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 0.0003, "sigmoidal")
+    print("Pesos:")
     print(W)
+
+    print(prediceSig([34.62365962451697,78.0246928153624], W))
+
+    plt.plot(costsEx, 'g')
+    plt.show()
+
+    exit()
+
+    X, Y = readFile('and.txt')
+    nn_params = randInicializaPesos(3)
+    print("Aprendiendo AND")
+    W, costsAnd = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 3, "sigmoidal")
+    print("Pesos:")
+    print(W)
+    print('\n a b | a and b')
+    print(' 0 0 | ', end='')
     a = prediceSig([0,0], W)
     print(a)
+    print(' 0 1 | ', end='')
     a = prediceSig([0,1], W)
     print(a)
+    print(' 1 0 | ', end='')
     a = prediceSig([1,0], W)
     print(a)
+    print(' 1 1 | ', end='')
     a = prediceSig([1,1], W)
     print(a)
 
-    plt.plot(costs)
+    X, Y = readFile('or.txt')
+    nn_params = randInicializaPesos(3)
+    print("\n\nAprendiendo OR")
+    W, costsOr = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 3, "sigmoidal")
+    print("Pesos:")
+    print(W)
+    print('\n a b | a or b')
+    print(' 0 0 | ', end='')
+    a = prediceSig([0,0], W)
+    print(a)
+    print(' 0 1 | ', end='')
+    a = prediceSig([0,1], W)
+    print(a)
+    print(' 1 0 | ', end='')
+    a = prediceSig([1,0], W)
+    print(a)
+    print(' 1 1 | ', end='')
+    a = prediceSig([1,1], W)
+    print(a)
+
+    plt.plot(costsAnd, 'b')
+    plt.plot(costsOr, 'r')
     plt.show()
