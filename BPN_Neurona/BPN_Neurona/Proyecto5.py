@@ -31,13 +31,20 @@ def dif(x):
 
 vdif = np.vectorize(dif)
 
-def funcionCosto(W, X, Y):
+def funcionCostoSig(W, X, Y):
     x = X.T
     y = Y.T
     m = x.shape[0]
     J = 0
     hip = vsig(x*W)
     J = -y.T * np.log(hip) - (1-y).T * np.log(1-hip)
+    J /= m
+    return J
+
+def funcionCostoLin(W, X, y):
+    m = X.shape[1]
+    Z = W.T * X
+    J = np.square(Z-y).sum()
     J /= m
     return J
 
@@ -48,21 +55,20 @@ def bpnUnaNeuronaSigmoidal (nn_params, input_layer_size, X, y, alpha, activacion
     costs = []
     running = True
     count = 0
-    #plt.ion()
     while running:
-        #print(W.A1)
-        #graficaDatos(X.T, Y.T, W.A1)
         running = False
-        cost = funcionCosto(W, X, y).sum()
-        costs.append(cost)
         Z = W.T * X
         if sigm:
+            cost = funcionCostoSig(W, X, y).sum()
             A = vsig(Z)
         else:
+            cost = funcionCostoLin(W, X, y).sum()
             A = Z
+        costs.append(cost)
         dz = A - Y
         dw = (1/m) * X * (dz.T)
         W += -alpha * dw
+        #print(str(cost) + "   " + str(W.T), end='\r')
         if (len(costs) < 100) or deltaIsBig(cost, costs[-2]):
             running = True
         if count > 10000:
@@ -92,11 +98,22 @@ def prediceRNYaEntrenada(X, nn_params, activacion):
     if activacion == "sigmoidal":
         A = vsig(Z)
         return vdif(A)
+    else:
+        return Z
 
 def prediceSig(list, W):
-    l = [1] + list
+    list = [float(i) for i in list]
+    l = [1.0] + list
+    l = np.matrix(l).T
+    a = prediceRNYaEntrenada(l, W, "sigmoidal")
+    return a.sum()
+
+def prediceLin(list, W, med, ran):
+    list = [float(i) for i in list]
+    l = [1.0] + list
     l = np.matrix(l)
-    a = prediceRNYaEntrenada(l.T, W, "sigmoidal")
+    l = normalizar(l, med, ran)
+    a = prediceRNYaEntrenada(l.T, W, "lin")
     return a.sum()
 
 def graficaDatos(X, Y, theta):
@@ -111,39 +128,90 @@ def graficaDatos(X, Y, theta):
     ma = max(X[:,1]).sum()
     rr = np.arange(mi, ma,(ma-mi)/1000)
     plt.plot(rr, f(rr, theta), 'g')
-    #plt.pause(0.05)
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
     plt.show()
 
 def f(x, theta):
     return -theta[0]/theta[2]-(theta[1]/theta[2])*(x)
 
+def normalizacionDeCaracteristicas(X):
+    m = X.shape[0]
+    n = X.shape[1]
+    ran = []
+    med = []
+
+    for i in range(1, n):
+        ran.append(X[:,i].max() - X[:,i].min())
+        med.append(X[:,i].sum() / m)
+
+    for x in range(1, n):
+        for y in range(0, m):
+            X[y,x] -= med[x-1]
+            X[y,x] /= ran[x-1]
+
+    return X, med, ran
+
+
+def normalizar(X, med, ran):
+    m = X.shape[0]
+    n = X.shape[1]
+    for x in range(1, n):
+        for y in range(0, m):
+            X[y,x] -= med[x-1]
+            X[y,x] /= ran[x-1]
+    return X
+
+
 if __name__ == '__main__':
+
+    ## HOUSES
+    print("\n\nAprendiendo houses")
+    X, Y = readFile('houses.txt')
+    Xt, med, ran = normalizacionDeCaracteristicas(X.T)
+    X = Xt.T
+    nn_params = randInicializaPesos(3)
+    W, costsHouses = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 0.03, "lineal")
+
+    print("Pesos:")
+    print(W)
+
+    params = [1985,4]
+    res = 299900
+    print("Prediccion para: " + str(params) + " (Esperado: " + str(res) + ")")
+    print(prediceLin(params, W, med, ran))
+
+    params = [2104,3]
+    res = 399900
+    print("Prediccion para: " + str(params) + " (Esperado: " + str(res) + ")")
+    print(prediceLin(params, W, med, ran))
+
+    plt.plot(costsHouses, 'r')
+    plt.xlabel('Iteracion')
+    plt.ylabel('Costo')
+    plt.show()
     
+
+    ## EXAMS
     X, Y = readFile('exams.txt')
     nn_params = randInicializaPesos(3)
-    print("Aprendiendo Exams")
+    print("\n\nAprendiendo Exams")
     X[1,:] /= 100
     X[2,:] /= 100
-    print(X.T)
     W, costsEx = bpnUnaNeuronaSigmoidal(nn_params, 1, X, Y, 3, "sigmoidal")
     print("Pesos:")
     print(W)
     graficaDatos(X.T, Y.T, W.A1)
-    #print(prediceSig([34.62365962451697,78.0246928153624], W))
 
-    a = prediceRNYaEntrenada(X, W, "sigmoidal")
-    for num in range(X.shape[1]):
-        print(str(a[0,num]) + " - " + str(Y[0, num]))
-
-
-    plt.plot(costsEx, 'g')
+    plt.plot(costsEx)
+    plt.xlabel('Iteracion')
+    plt.ylabel('Costo')
     plt.show()
 
-    exit()
-
+    ## AND
     X, Y = readFile('and.txt')
     nn_params = randInicializaPesos(3)
-    print("Aprendiendo AND")
+    print("\n\nAprendiendo AND")
     W, costsAnd = bpnUnaNeuronaSigmoidal(nn_params, 3, X, Y, 3, "sigmoidal")
     print("Pesos:")
     print(W)
@@ -160,7 +228,9 @@ if __name__ == '__main__':
     print(' 1 1 | ', end='')
     a = prediceSig([1,1], W)
     print(a)
+    graficaDatos(X.T, Y.T, W.A1)
 
+    ## OR
     X, Y = readFile('or.txt')
     nn_params = randInicializaPesos(3)
     print("\n\nAprendiendo OR")
@@ -180,7 +250,12 @@ if __name__ == '__main__':
     print(' 1 1 | ', end='')
     a = prediceSig([1,1], W)
     print(a)
+    graficaDatos(X.T, Y.T, W.A1)
 
-    plt.plot(costsAnd, 'b')
-    plt.plot(costsOr, 'r')
+    plotAnd, = plt.plot(costsAnd, 'b', label='AND')
+    plotOr, = plt.plot(costsOr, 'r', label='OR')
+    plt.xlabel('Iteracion')
+    plt.ylabel('Costo')
+    plt.legend(handles=[plotAnd, plotOr])
     plt.show()
+

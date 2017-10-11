@@ -26,6 +26,7 @@
   <ItemGroup>
     <Content Include="and.txt" />
     <Content Include="exams.txt" />
+    <Content Include="houses.txt" />
     <Content Include="or.txt" />
     <Content Include="test.txt" />
   </ItemGroup>
