@@ -217,7 +217,7 @@ def drawImg(data, val = '?'):
 
 def training():
     print('\nREADING:')
-    X, y = readFile('digitos50.txt')
+    X, y = readFile('digitos500.txt')
     print('\nSHAPES:')
     print(X.shape)
     print(y.shape)
@@ -226,15 +226,15 @@ def training():
     W1, W2, costs = entrenaRN(400, 25, 10, X, y)
     #print(W1)
     #print(W2)
-    np.save('w1_5000_1.npy', W1)
-    np.save('w2_5000_1.npy', W2)
+    np.save('w1_500_17.npy', W1)
+    np.save('w2_500_17.npy', W2)
 
     plt.plot(costs)
     plt.show()
     return W1, W2
 
 def predictions(W1, W2):
-    Xt, yt = readFile('digitos50.txt')
+    Xt, yt = readFile('digitos500.txt')
     val = prediceRNYaEntrenada(Xt,W1,W2)
     total = Xt.shape[1]
     sucess = 0
