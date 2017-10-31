@@ -5,14 +5,18 @@ def do():
         count = 0
         num = 0
         out = ""
+
         for line in fileIn:
-            if(num % 2 == 0):
+            if(num % 4 != 0):
                 out += line
                 count += 1
             num += 1
 
         print("TOT lines: " + str(count))
 
-        with open('digitos2500.txt','w') as fileOut:
+        with open('digitos_algo.txt','w') as fileOut:
             print("ESCRIBIENDO")
             fileOut.write(out)
+
+if __name__ == '__main__':
+    do()

@@ -34,8 +34,6 @@
     <Content Include="digitos5.txt" />
     <Content Include="digitos50.txt" />
     <Content Include="test5.txt" />
-    <Content Include="w1.npy" />
-    <Content Include="w2.npy" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

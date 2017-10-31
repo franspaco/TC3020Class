@@ -123,7 +123,7 @@ def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
         if (len(costs) < 100) or deltaIsBig(costs[-1], costs[-2]):
             running = True
 
-        if count > 2000:
+        if count > 5000:
             running = False
             print('\nSTOP by Iterations')
 
@@ -171,7 +171,7 @@ def drawImg(data, val = '?'):
 
 def training():
     print('\nREADING:')
-    X, y = readFile('digitos2500.txt')
+    X, y = readFile('digitos_3750.txt')
     print('\nSHAPES:')
     print(X.shape)
     print(y.shape)
@@ -180,7 +180,6 @@ def training():
     W1, b1, W2, b2, costs = entrenaRN(400, 25, 10, X, y)
     #print(W1)
     #print(W2)
-    string = '_500_25'
     np.save('w1' + string + '.npy', W1)
     np.save('w2' + string + '.npy', W2)
     np.save('b1' + string + '.npy', b1)
@@ -189,6 +188,7 @@ def training():
     plt.plot(costs)
     plt.show()
     return W1, b1, W2, b2
+
 
 def predictions(W1, b1, W2, b2):
     Xt, yt = readFile('digitos.txt')
@@ -205,15 +205,42 @@ def predictions(W1, b1, W2, b2):
 
     print("Correct: " + str(sucess) + '/' + str(total) + ' => ' + str(sucess/total*100) + '%')
 
-def main():
-    W1, b1, W2, b2 = training()
-
-    #W1 = np.load('w1_500_20.npy')
-    #W2 = np.load('w2_500_20.npy')
+def main(train):
+    if train:
+        W1, b1, W2, b2 = training()
+    else:
+        print('LOADING WEIGHT FROM FILE FOR PREDICTIONS')
+        W1 = np.load('W1' + string + '.npy')
+        W2 = np.load('W2' + string + '.npy')
+        b1 = np.load('b1' + string + '.npy')
+        b2 = np.load('b2' + string + '.npy')
 
     predictions(W1, b1, W2, b2)
 
+def display(num):
+    X, y = readFile('digitos.txt')
+    exp = vetorToClass(y[:,num])
+    drawImg(X[:,num], exp)
 
+
+string = '_3750_5000'
 
 if __name__ == '__main__':
-    main()
+    import sys
+    # Check for Display mode
+    if len(sys.argv) == 3 and sys.argv[1] == '-d':
+        try:
+            num = int(sys.argv[2])
+        except:
+            print('Error parsing parameter: ' + sys.argv[2])
+        display(num)
+        exit()
+
+    # Check for training mode
+    if len(sys.argv) > 1 and sys.argv[1] == '-p':
+        training_mode = False
+    else:
+        training_mode = True
+
+    # Call main function
+    main(training_mode)
