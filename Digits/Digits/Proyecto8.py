@@ -67,7 +67,7 @@ def funCosto(h, y):
 
     return J
 
-def entrenaRNB(input_layer_size, hidden_layer_size, num_labels, X, y):
+def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
     alpha = 1
     m = X.shape[1]
     # A0 is 400xm
@@ -130,89 +130,6 @@ def entrenaRNB(input_layer_size, hidden_layer_size, num_labels, X, y):
     return W1, b1, W2, b2, costs
 
 
-
-
-def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
-    alpha = 0.01
-    #alpha = 0.0003
-    #alpha = 0.00001
-
-    m = X.shape[1]
-
-    # X is 401xm
-    X = np.concatenate((np.ones((1,X.shape[1])),X), axis=0)
-    A0 = X
-    # W1 is 25x401
-    W1 = randInicializacionPesos(input_layer_size + 1, hidden_layer_size)
-    # W2 is 10x26
-    W2 = randInicializacionPesos(hidden_layer_size + 1, num_labels)
-
-    #print('X:  ' + str(X.shape))
-    #print('y:  ' + str(y.shape))
-    #print('W1: ' + str(W1.shape))
-    #print('W2: ' + str(W2.shape))
-
-    costs = []
-    running = True
-    count = 0
-    while running:
-        running = False
-        count += 1
-        # Hidden layer
-
-        # Z1 is 25xm
-        Z1 = W1 * A0
-        # A1 is 25xm
-        A1 = vsig(Z1)
-        # A1 is 26xm
-        A1 = np.concatenate((np.ones((1,A1.shape[1])),A1), axis=0)
-        # A1 is 26xm
-
-        # Output layer
-
-        # Z2 is 10xm
-        Z2 = W2 * A1
-        # A2 is 10xm
-        A2 = vsig(Z2)
-
-        # COST 
-        J = funCosto(A2, y)
-        print('IT #' + str(count) + ' J=' + str(J), end='\r')
-        costs.append(J)
-
-        # BACK PROPAGATION
-
-        # 10xm = (10xm - 10xm)
-        dz2 = A2 - y
-
-        # 26xm = (26x10 * 10xm) .* 26xm
-        dz1 = np.multiply(W2.T * dz2, sigmoidalGradienteA(A1))
-
-        # 25xm
-        dz1 = dz1[1:]
-
-        # PARAM UPDATE
-        dw2 = (1/m) * dz2 * A1.T
-        dw1 = (1/m) * dz1 * A0.T
-        W2 += -alpha * dw2
-        W1 += -alpha * dw1
-
-        if (len(costs) < 100) or deltaIsBig(costs[-1], costs[-2]):
-            running = True
-        else:
-            print('\nSTOP by Delta')
-            pass
-        if( len(costs) > 100 and costs[-1] > costs[-2]):
-            #running = False
-            #print('\nSTOP by Bounce')
-            pass
-        if count > 2000:
-            running = False
-            print('\nSTOP by Iterations')
-
-    print('\nTRAINING DONE')
-    return W1, W2, costs
-
 def deltaIsBig(current, last):
     return abs(current-last) > 0.00000001
 
@@ -232,7 +149,7 @@ def randInicializacionPesos(L_in, L_out):
             W[-1].append(random.uniform(-0.12, 0.12))
     return np.matrix(W)
 
-def prediceRNYaEntrenadaB(X, W1, b1, W2, b2):
+def prediceRNYaEntrenada(X, W1, b1, W2, b2):
     # A0 is 401xm
     A0 = X
     Z1 = W1 * A0 + b1
@@ -260,7 +177,7 @@ def training():
     print(y.shape)
     #return
     print('\nTRAINING:')
-    W1, b1, W2, b2, costs = entrenaRNB(400, 25, 10, X, y)
+    W1, b1, W2, b2, costs = entrenaRN(400, 25, 10, X, y)
     #print(W1)
     #print(W2)
     string = '_500_25'
@@ -273,31 +190,12 @@ def training():
     plt.show()
     return W1, b1, W2, b2
 
-def sacaCosto(X, y, W1, W2):
-    A0 = np.concatenate((np.ones((1,X.shape[1])),X), axis=0)
-    # Hidden layer
-    # Z1 is 25xm
-    Z1 = W1 * A0
-    # A1 is 25xm
-    A1 = vsig(Z1)
-    # A1 is 26xm
-    A1 = np.concatenate((np.ones((1,A1.shape[1])),A1), axis=0)
-    # A1 is 26xm
-
-    # Output layer
-    # Z2 is 10xm
-    Z2 = W2 * A1
-    # A2 is 10xm
-    A2 = vsig(Z2)
-    J = funCosto(A2, y)
-    print('COSTO: ' + str(J))
-
 def predictions(W1, b1, W2, b2):
     Xt, yt = readFile('digitos.txt')
     total = Xt.shape[1]
     sucess = 0
     for i in range(Xt.shape[1]):
-        val = prediceRNYaEntrenadaB(Xt[:,i],W1, b1, W2, b2)
+        val = prediceRNYaEntrenada(Xt[:,i],W1, b1, W2, b2)
         exp = vetorToClass(yt[:,i])
         print("\nEXPECTED: " + str(exp))
         print("FOUND:    " + str(val))
