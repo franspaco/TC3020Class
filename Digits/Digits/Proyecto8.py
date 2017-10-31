@@ -4,8 +4,6 @@ import math
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from scipy.optimize import minimize
 
 
 def sig(z):
@@ -60,24 +58,84 @@ def ps(x):
         print(len(sub), end=" ")
     print("")
 
-def funCosto(h, y, W1, W2, lam):
+def funCosto(h, y):
     m = h.shape[1]
 
     J = - np.multiply(y, np.log(h)) - np.multiply(1-y, np.log(1-h))
     J = J.sum()
-    
     J /= m
 
-    reg = (lam /(2.0*m)) * (np.power(W1[:,1:], 2).sum() + np.power(W2[:,1:], 2).sum())
+    return J
 
-    return J + reg
+def entrenaRNB(input_layer_size, hidden_layer_size, num_labels, X, y):
+    alpha = 1
+    m = X.shape[1]
+    # A0 is 400xm
+    A0 = X
+    # W1 is 25x400
+    W1 = randInicializacionPesos(input_layer_size, hidden_layer_size)
+    # W2 is 10x25
+    W2 = randInicializacionPesos(hidden_layer_size, num_labels)
+
+    b1 = np.ones((hidden_layer_size, 1));
+    b2 = np.ones((num_labels, 1));
+
+    costs = []
+    running = True
+    count = 0
+    while running:
+        running = False
+        count += 1
+        # Hidden layer
+        # Z1 is 25xm
+        Z1 = W1 * A0 + b1
+        # A1 is 25xm
+        A1 = vsig(Z1)
+
+        # Output layer
+        # Z2 is 10xm
+        Z2 = W2 * A1 + b2
+        # A2 is 10xm
+        A2 = vsig(Z2)
+
+        J = funCosto(A2, y)
+        print('IT #' + str(count) + ' J=' + str(J), end='\r')
+        costs.append(J)
+
+        #Back
+        # 10xm = (10xm - 10xm)
+        dz2 = A2 - y
+        # 10x25 = 10xm * mx25
+        dw2 = (1/m) * dz2 * A1.T
+        db2 = (1/m) * np.sum(np.array(dz2), axis=1, keepdims=True)
+
+        # 25xm = (25x10 * 10xm) .* 25xm
+        dz1 = np.multiply(W2.T * dz2, sigmoidalGradienteA(A1))
+        # 25x400 = 25xm * mx400
+        dw1 = (1/m) * dz1 * A0.T
+        db1 = (1/m) * np.sum(np.array(dz1), axis=1, keepdims=True)
+
+        W2 += -alpha * dw2
+        b2 += -alpha * db2
+        W1 += -alpha * dw1
+        b1 += -alpha * db1
+
+        if (len(costs) < 100) or deltaIsBig(costs[-1], costs[-2]):
+            running = True
+
+        if count > 1000:
+            running = False
+            print('\nSTOP by Iterations')
+
+    return W1, b1, W2, b2, costs
+
+
+
 
 def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
-    alpha = 0.1
+    alpha = 0.01
     #alpha = 0.0003
     #alpha = 0.00001
-
-    lam = 1
 
     m = X.shape[1]
 
@@ -104,9 +162,9 @@ def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
 
         # Z1 is 25xm
         Z1 = W1 * A0
-        # tempA is 25xm
+        # A1 is 25xm
         A1 = vsig(Z1)
-        # tempA is 26xm
+        # A1 is 26xm
         A1 = np.concatenate((np.ones((1,A1.shape[1])),A1), axis=0)
         # A1 is 26xm
 
@@ -118,45 +176,26 @@ def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
         A2 = vsig(Z2)
 
         # COST 
-        J = funCosto(A2, y, W1, W2, 1)
+        J = funCosto(A2, y)
         print('IT #' + str(count) + ' J=' + str(J), end='\r')
         costs.append(J)
-        #print('J=  ' + str(J))
 
         # BACK PROPAGATION
 
-        # ESTO EN UNA COPIA LITERAL DE CADA COSA.. maybe works?
-        delta1 = np.zeros(W1.shape) 
-        delta2 = np.zeros(W2.shape)
-
-        for n in range(m):
-            d_2 = y[:,n] - A2[:,n]
-            d_1 = np.multiply(W2.T * d_2, sigmoidalGradienteA(A1[:,n]))
-            d_1 = d_1[1:]
-            delta2 += d_2 * A1[:,n].T
-            delta1 += d_1 * A0[:,n].T
-
-        W2grad =  alpha * (1/m) * delta2 + (lam/m) * np.concatenate((np.zeros((W2.shape[0],1)),W2[:,1:]), axis=1)
-        W1grad =  alpha * (1/m) * delta1 + (lam/m) * np.concatenate((np.zeros((W1.shape[0],1)),W1[:,1:]), axis=1)
-
-        W2 += W2grad
-        W1 += W1grad
-
-        # ESTO ES LO QUE ESTABA USANDO
-        # 10xm = (10xm - 10xm) .* 10xm
-        #d2 = np.multiply(A2 - y, sigmoidalGradienteA(A[2]))
-        #d2 = A2 - y
-        # NO SE CUAL DE ESTAS DOS USAR
+        # 10xm = (10xm - 10xm)
+        dz2 = A2 - y
 
         # 26xm = (26x10 * 10xm) .* 26xm
-        #d1 = np.multiply(W2.T * d2, sigmoidalGradienteA(A1))
+        dz1 = np.multiply(W2.T * dz2, sigmoidalGradienteA(A1))
 
         # 25xm
-        #d1 = d1[1:]
+        dz1 = dz1[1:]
 
         # PARAM UPDATE
-        #W2 -= alpha * (1/m) * d2 * A1.T + (lam/m) * np.concatenate((np.zeros((W2.shape[0],1)),W2[:,1:]), axis=1)
-        #W1 -= alpha * (1/m) * d1 * A0.T + (lam/m) * np.concatenate((np.zeros((W1.shape[0],1)),W1[:,1:]), axis=1)
+        dw2 = (1/m) * dz2 * A1.T
+        dw1 = (1/m) * dz1 * A0.T
+        W2 += -alpha * dw2
+        W1 += -alpha * dw1
 
         if (len(costs) < 100) or deltaIsBig(costs[-1], costs[-2]):
             running = True
@@ -167,7 +206,7 @@ def entrenaRN(input_layer_size, hidden_layer_size, num_labels, X, y):
             #running = False
             #print('\nSTOP by Bounce')
             pass
-        if count > 200:
+        if count > 2000:
             running = False
             print('\nSTOP by Iterations')
 
@@ -193,18 +232,16 @@ def randInicializacionPesos(L_in, L_out):
             W[-1].append(random.uniform(-0.12, 0.12))
     return np.matrix(W)
 
-def prediceRNYaEntrenada(X,W1,W2):
-    X = np.concatenate((np.ones((1,X.shape[1])),X), axis=0)
-    Z1 = W1 * X
+def prediceRNYaEntrenadaB(X, W1, b1, W2, b2):
+    # A0 is 401xm
+    A0 = X
+    Z1 = W1 * A0 + b1
     # A1 is 25xm
     A1 = vsig(Z1)
-    # A1 is 26xm
-    A1 = np.concatenate((np.ones((1,A1.shape[1])),A1), axis=0)
 
     # Output layer
-
     # Z2 is 10xm
-    Z2 = W2 * A1
+    Z2 = W2 * A1 + b2
     # A2 is 10xm
     A2 = vsig(Z2)
     max = np.argmax(A2)
@@ -217,29 +254,50 @@ def drawImg(data, val = '?'):
 
 def training():
     print('\nREADING:')
-    X, y = readFile('digitos500.txt')
+    X, y = readFile('digitos1000.txt')
     print('\nSHAPES:')
     print(X.shape)
     print(y.shape)
     #return
     print('\nTRAINING:')
-    W1, W2, costs = entrenaRN(400, 25, 10, X, y)
+    W1, b1, W2, b2, costs = entrenaRNB(400, 25, 10, X, y)
     #print(W1)
     #print(W2)
-    np.save('w1_500_17.npy', W1)
-    np.save('w2_500_17.npy', W2)
+    string = '_500_25'
+    np.save('w1' + string + '.npy', W1)
+    np.save('w2' + string + '.npy', W2)
+    np.save('b1' + string + '.npy', b1)
+    np.save('b2' + string + '.npy', b2)
 
     plt.plot(costs)
     plt.show()
-    return W1, W2
+    return W1, b1, W2, b2
 
-def predictions(W1, W2):
-    Xt, yt = readFile('digitos500.txt')
-    val = prediceRNYaEntrenada(Xt,W1,W2)
+def sacaCosto(X, y, W1, W2):
+    A0 = np.concatenate((np.ones((1,X.shape[1])),X), axis=0)
+    # Hidden layer
+    # Z1 is 25xm
+    Z1 = W1 * A0
+    # A1 is 25xm
+    A1 = vsig(Z1)
+    # A1 is 26xm
+    A1 = np.concatenate((np.ones((1,A1.shape[1])),A1), axis=0)
+    # A1 is 26xm
+
+    # Output layer
+    # Z2 is 10xm
+    Z2 = W2 * A1
+    # A2 is 10xm
+    A2 = vsig(Z2)
+    J = funCosto(A2, y)
+    print('COSTO: ' + str(J))
+
+def predictions(W1, b1, W2, b2):
+    Xt, yt = readFile('digitos.txt')
     total = Xt.shape[1]
     sucess = 0
     for i in range(Xt.shape[1]):
-        val = prediceRNYaEntrenada(Xt[:,i],W1,W2)
+        val = prediceRNYaEntrenadaB(Xt[:,i],W1, b1, W2, b2)
         exp = vetorToClass(yt[:,i])
         print("\nEXPECTED: " + str(exp))
         print("FOUND:    " + str(val))
@@ -250,12 +308,12 @@ def predictions(W1, W2):
     print("Correct: " + str(sucess) + '/' + str(total) + ' => ' + str(sucess/total*100) + '%')
 
 def main():
-    W1, W2 = training()
+    W1, b1, W2, b2 = training()
 
-    #W1 = np.load('w1_5000_1.npy')
-    #W2 = np.load('w2_5000_1.npy')
+    #W1 = np.load('w1_500_20.npy')
+    #W2 = np.load('w2_500_20.npy')
 
-    predictions(W1, W2)
+    predictions(W1, b1, W2, b2)
 
 
 
