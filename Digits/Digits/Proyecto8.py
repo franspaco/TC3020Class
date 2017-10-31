@@ -123,7 +123,7 @@ def entrenaRNB(input_layer_size, hidden_layer_size, num_labels, X, y):
         if (len(costs) < 100) or deltaIsBig(costs[-1], costs[-2]):
             running = True
 
-        if count > 1000:
+        if count > 2000:
             running = False
             print('\nSTOP by Iterations')
 
@@ -254,7 +254,7 @@ def drawImg(data, val = '?'):
 
 def training():
     print('\nREADING:')
-    X, y = readFile('digitos1000.txt')
+    X, y = readFile('digitos2500.txt')
     print('\nSHAPES:')
     print(X.shape)
     print(y.shape)
