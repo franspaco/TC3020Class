@@ -31,7 +31,7 @@ def computeCentroids(X, idx, K):
 
 
 
-def runkMeans(X, initial_centroids, max_iters, draw=True):
+def runkMeans(X, initial_centroids, max_iters, draw=False):
     newK = initial_centroids
     c_last = None
     for it in range(max_iters):
